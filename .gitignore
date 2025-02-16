@@ -5,3 +5,4 @@ examples/__pycache__/inference.cpython-313.pyc
 .venv/
 examples/__pycache__/
 examples/.ipynb_checkpoints/
+examples/secure_transaction.log
