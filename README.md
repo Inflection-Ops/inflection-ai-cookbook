@@ -2,7 +2,7 @@
 
 ## 🌟 Welcome to the **Infection AI Cookbook**
 
-🤖✨ Hey there, AI enthusiast! 🤖✨ Ready to dive into the world of **Inflection AI** and supercharge your projects? This repository is your all-in-one guide, packed with fun, practical, and powerful AI use cases!
+🤖✨ Hey there, AI enthusiast! 🤖✨ Ready to dive into the world of **Inflection AI** and supercharge your projects? [This repository](https://github.com/Inflection-Ops/inflection-ai-cookbook) is your all-in-one guide, packed with fun, practical, and powerful AI use cases!
 
 Whether you're automating workflows, classifying documents, generating intelligent responses, or building AI-powered applications, we've got you covered!
 
