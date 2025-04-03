@@ -1,4 +1,9 @@
-from utils import get_response
+import sys
+import os
+
+# Add the parent directory to sys.path so we can add examples/utils.py
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 system_instruction_prompt = """
 You are an AI assistant designed to determine the correct service intent for routing a user's query. Follow a step-by-step approach based on the sequence of prior intents and the user's current input.
@@ -75,35 +80,65 @@ example_output_4 = """
 """
 
 
-def get_service_router_context(previous_intents: str, service_request: str) -> list:
+def get_service_router_context(previous_intents: str, service_request: str, legacy_api: bool = True) -> list:
     """
     Returns the context for the service router.
     """
-    context = [
-        {"type": "Instruction", "text": system_instruction_prompt},
 
-        {"type": "Human", "text": example_previous_intents_1},
-        {"type": "Human", "text": example_previous_user_query_1},
-        {"type": "AI", "text": example_output_1},
+    if legacy_api:
+        context = [
+            {"type": "Instruction", "text": system_instruction_prompt},
 
-        {"type": "Human", "text": example_previous_intents_2},
-        {"type": "Human", "text": example_previous_user_query_2},
-        {"type": "AI", "text": example_output_2},
+            {"type": "Human", "text": example_previous_intents_1},
+            {"type": "Human", "text": example_previous_user_query_1},
+            {"type": "AI", "text": example_output_1},
 
-        {"type": "Human", "text": example_previous_intents_3},
-        {"type": "Human", "text": example_previous_user_query_3},
-        {"type": "AI", "text": example_output_3},
+            {"type": "Human", "text": example_previous_intents_2},
+            {"type": "Human", "text": example_previous_user_query_2},
+            {"type": "AI", "text": example_output_2},
 
-        {"type": "Human", "text": example_previous_intents_4},
-        {"type": "Human", "text": example_previous_user_query_4},
-        {"type": "AI", "text": example_output_4},
-        {
-            "type": "Human",
-            "text": f"Query: {previous_intents}",
-        },
-        {
-            "type": "Human",
-            "text": f"Query: {service_request}",
-        },
-    ]
+            {"type": "Human", "text": example_previous_intents_3},
+            {"type": "Human", "text": example_previous_user_query_3},
+            {"type": "AI", "text": example_output_3},
+
+            {"type": "Human", "text": example_previous_intents_4},
+            {"type": "Human", "text": example_previous_user_query_4},
+            {"type": "AI", "text": example_output_4},
+            {
+                "type": "Human",
+                "text": f"Query: {previous_intents}",
+            },
+            {
+                "type": "Human",
+                "text": f"Query: {service_request}",
+            },
+        ]
+    else:
+        context = [
+                {"role": "system", "content": system_instruction_prompt},
+
+                {"role": "user", "content": example_previous_intents_1},
+                {"role": "user", "content": example_previous_user_query_1},
+                {"role": "assistant", "content": example_output_1},
+
+                {"role": "user", "content": example_previous_intents_2},
+                {"role": "user", "content": example_previous_user_query_2},
+                {"role": "assistant", "content": example_output_2},
+
+                {"role": "user", "content": example_previous_intents_3},
+                {"role": "user", "content": example_previous_user_query_3},
+                {"role": "assistant", "content": example_output_3},
+
+                {"role": "user", "content": example_previous_intents_4},
+                {"role": "user", "content": example_previous_user_query_4},
+                {"role": "assistant", "content": example_output_4},
+                {
+                    "role": "user",
+                    "content": f"Query: {previous_intents}",
+                },
+                {
+                    "role": "user",
+                    "content": f"Query: {service_request}",
+                },
+            ]
     return context

@@ -1,4 +1,4 @@
-DS_Store
+.DS_Store
 .env
 examples/.ipynb_checkpoints/intent_recognition-checkpoint.ipynb
 examples/__pycache__/inference.cpython-313.pyc
@@ -6,3 +6,7 @@ examples/__pycache__/inference.cpython-313.pyc
 examples/__pycache__/
 examples/.ipynb_checkpoints/
 examples/secure_transaction.log
+examples/.DS_Store
+examples/tests/__pycache__/
+.DS_Store
+.DS_Store

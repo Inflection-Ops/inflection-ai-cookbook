@@ -33,16 +33,29 @@ example_output_2 = """
 """
 
 
-def get_extract_time_context(message: str) -> list:
-    context = [
-        {"type": "Instruction", "text": system_instruction_prompt},
-        {"type": "Human", "text": example_input_1},
-        {"type": "AI", "text": example_output_1},
-        {"type": "Human", "text": example_input_2},
-        {"type": "AI", "text": example_output_2},
-        {
-            "type": "Human",
-            "text": f"Email body: {message}",
-        },
-    ]
+def get_extract_time_context(message: str, legacy_api: bool = True) -> list:
+    if legacy_api:
+        context = [
+            {"type": "Instruction", "text": system_instruction_prompt},
+            {"type": "Human", "text": example_input_1},
+            {"type": "AI", "text": example_output_1},
+            {"type": "Human", "text": example_input_2},
+            {"type": "AI", "text": example_output_2},
+            {
+                "type": "Human",
+                "text": f"Email body: {message}",
+            },
+        ]
+    else:
+        context = [
+            {"role": "system", "content": system_instruction_prompt},
+            {"role": "user", "content": example_input_1},
+            {"role": "assistant", "content": example_output_1},
+            {"role": "user", "content": example_input_2},
+            {"role": "assistant", "content": example_output_2},
+            {
+                "role": "user",
+                "content": f"Email body: {message}",
+            },
+        ]
     return context
