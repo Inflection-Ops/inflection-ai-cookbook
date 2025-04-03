@@ -2,19 +2,23 @@ import sys
 import os
 
 # Add the parent directory to sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import pytest
-from chain_of_thought import get_service_router_context
 from artifacts import linkedin_notifications_artifact_content
-from code_generation import system_instruction_prompt as sip_code_generation
-from classification import system_instruction_prompt as sip_classification
-from emotional_intelligence import system_instruction_prompt_linkedin as sip_emotional_intelligence_linkedin
-from few_shot_learning import get_extract_time_context
-from intent_recognition import system_instruction_prompt as sip_intent_recognition
-from rag_enabled_agents import system_instruction_prompt as sip_rag_enabled_agents, retrieve_top_k
-from function_calling import handle_query
-from groq import fetch_json
+from .helpers import (
+    get_service_router_context,
+    sip_code_generation,
+    sip_classification,
+    sip_emotional_intelligence_linkedin,
+    sip_intent_recognition,
+    sip_rag_enabled_agents,
+    get_extract_time_context,
+    retrieve_top_k,
+    handle_query,
+    fetch_json
+)
+
 from utils import get_context, get_response
 from inference import fetch as fetch_inflection
 from typing import Any, Dict, Optional
@@ -35,7 +39,6 @@ Return a JSON response with the following structure:
 }
 """
 
-
 async def validate_generated_code(instructions: str, generated_code: str) -> Optional[Dict[str, Any]]:
     validation_prompt = f"""
     Original Instructions:
@@ -51,20 +54,10 @@ async def validate_generated_code(instructions: str, generated_code: str) -> Opt
 
 
 @pytest.mark.asyncio
-async def test_restaurant_review_flow():
-    """Test the natural flow from restaurant search to viewing reviews"""
-    previous_intents = "search_nearby_restaurants"
-    service_request = "Please show me the reviews."
-    context = get_service_router_context(previous_intents, service_request)
-    result = await get_response(context, ["reasoning", "intent"])
-
-    assert result["intent"] == "view_restaurant_reviews"
-
-
-@pytest.mark.asyncio
-async def test_code_generation_and_validation():
+@pytest.mark.parametrize("legacy_api", [True, False])
+async def test_code_generation_and_validation(legacy_api: bool):
     """Test the complete flow of code generation and validation."""
-    print("Starting test: test_code_generation_and_validation")
+    print(f"Starting test: test_code_generation_and_validation with legacy_api={legacy_api}")
     print("-" * 50)
 
     # Test case 1: Simple function generation
@@ -76,11 +69,12 @@ async def test_code_generation_and_validation():
     context = get_context(
         sip_code_generation,
         instructions,
-        user_input_label="User's instructions:"
+        user_input_label="User's instructions:",
+        legacy_api=legacy_api
     )
 
     # Generate code using Inflection
-    generated_code = await fetch_inflection(context)
+    generated_code = await fetch_inflection(context, legacy_api=legacy_api)
     assert generated_code is not None, "Code generation failed"
     print(f"Generated Code:\n{generated_code}\n")
 
@@ -96,13 +90,13 @@ async def test_code_generation_and_validation():
 
     # Log validation results
     if validation_result["is_valid"]:
-        print("✅ Code generation test passed!")
+        print(f"✅ Code generation test passed with legacy_api={legacy_api}!")
         if "suggestions" in validation_result and validation_result["suggestions"]:
             print("Suggestions for improvement:")
             for suggestion in validation_result["suggestions"]:
                 print(f"- {suggestion}")
     else:
-        print("❌ Code generation test failed!")
+        print(f"❌ Code generation test failed with legacy_api={legacy_api}!")
         print(f"Reason: {validation_result['reasoning']}")
         if "suggestions" in validation_result:
             print("Suggestions for fixes:")
@@ -111,9 +105,21 @@ async def test_code_generation_and_validation():
 
     return validation_result
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("legacy_api", [True, False])
+async def test_restaurant_review_flow(legacy_api: bool):
+    """Test the natural flow from restaurant search to viewing reviews"""
+    previous_intents = "search_nearby_restaurants"
+    service_request = "Please show me the reviews."
+    context = get_service_router_context(previous_intents, service_request, legacy_api=legacy_api)
+    result = await get_response(context, ["reasoning", "intent"], legacy_api=legacy_api)
+
+    assert result["intent"] == "view_restaurant_reviews"
+
 
 @pytest.mark.asyncio
-async def test_document_classification():
+@pytest.mark.parametrize("legacy_api", [True, False])
+async def test_document_classification(legacy_api: bool):
     document_text = """
     Project Alpha
 
@@ -143,17 +149,18 @@ async def test_document_classification():
 
         Contractor: Deliver on time and as specified.
     """
-    context = get_context(sip_classification, document_text)
-    result = await get_response(context, ["category"])
+    context = get_context(sip_classification, document_text, legacy_api=legacy_api)
+    result = await get_response(context, ["category"], legacy_api=legacy_api)
     assert result["category"] == "statement_of_work"
     print(f"Category: {result["category"]}")
 
 
 @pytest.mark.asyncio
-async def test_emotional_intelligence():
+@pytest.mark.parametrize("legacy_api", [True, False])
+async def test_emotional_intelligence(legacy_api: bool):
     message = linkedin_notifications_artifact_content + "\n # Which Notification Or Message The Human Wants You To Draft A Reply To: New Connection Request: John Smith"
-    context = get_context(sip_emotional_intelligence_linkedin, message)
-    result = await get_response(context, ["response"])
+    context = get_context(sip_emotional_intelligence_linkedin, message, legacy_api=legacy_api)
+    result = await get_response(context, ["response"], legacy_api=legacy_api)
 
     system_prompt = """
 You are a personal assistant who have been tasked to review an AI generated outgoing message. Evaluate the given message based on correctness, clarity, professionalism, relevance, politeness, and security.
@@ -189,10 +196,11 @@ Return a JSON response with the following structure:
 
 
 @pytest.mark.asyncio
-async def test_few_shot_learning():
+@pytest.mark.parametrize("legacy_api", [True, False])
+async def test_few_shot_learning(legacy_api: bool):
     message = "Let's schedule the meeting for 5pm for 2 hours"
-    context = get_extract_time_context(message)
-    result = await get_response(context, ["start_time", "end_time"])
+    context = get_extract_time_context(message, legacy_api=legacy_api)
+    result = await get_response(context, ["start_time", "end_time"], legacy_api=legacy_api)
     print(result)
 
     system_prompt = '''
@@ -226,9 +234,10 @@ Return a JSON response with the following structure:
 
 
 @pytest.mark.asyncio
-async def test_function_calling():
+@pytest.mark.parametrize("legacy_api", [True, False])
+async def test_function_calling(legacy_api: bool):
     message = "What is the weather in Hawaii?"
-    result = await handle_query(message)
+    result = await handle_query(message, legacy_api=legacy_api)
     print(result)
 
     system_prompt = '''
@@ -262,7 +271,8 @@ Return a JSON response with the following structure:
 
 
 @pytest.mark.asyncio
-async def test_intent_recognition():
+@pytest.mark.parametrize("legacy_api", [True, False])
+async def test_intent_recognition(legacy_api: bool):
     system_prompt = '''
     Evaluate the recognized intent from GPT to ensure that it matches the original email message passed in to it. Make sure that the recognized intent is logically correct and closed relates to the intent of the original message. 
 
@@ -274,8 +284,8 @@ async def test_intent_recognition():
     '''
 
     email_body = "Good day! I stumbled upon a charming little bug in one of your functions, please fix."
-    context = get_context(sip_intent_recognition, email_body, user_input_label="Email body")
-    result = await get_response(context, ["reasoning", "intent_recognized"])
+    context = get_context(sip_intent_recognition, email_body, user_input_label="Email body", legacy_api=legacy_api)
+    result = await get_response(context, ["reasoning", "intent_recognized"], legacy_api=legacy_api)
 
     validation_prompt = f"""
     Original email message:
@@ -296,8 +306,8 @@ async def test_intent_recognition():
     assert "reasoning" in validation_result, "Missing 'reasoning' in validation response"
 
     email_body = "Do you have time to meet today to strategize our next masterstroke, or shall we let the universe think it's gotten the upper hand?"
-    context = get_context(sip_intent_recognition, email_body, user_input_label="Email body")
-    result = await get_response(context, ["reasoning", "intent_recognized"])
+    context = get_context(sip_intent_recognition, email_body, user_input_label="Email body", legacy_api=legacy_api)
+    result = await get_response(context, ["reasoning", "intent_recognized"], legacy_api=legacy_api)
 
     validation_prompt = f"""
     Original email message:
@@ -319,13 +329,14 @@ async def test_intent_recognition():
 
 
 @pytest.mark.asyncio
-async def test_rag_enabled_agents():
+@pytest.mark.parametrize("legacy_api", [True, False])
+async def test_rag_enabled_agents(legacy_api: bool):
     question = "What are the benefits of electric vehicles?"
     retrieved_chunks = retrieve_top_k(question)
 
     query = f"Query: {question}\nRetrieved context: {retrieved_chunks}"
-    context = get_context(sip_rag_enabled_agents, query)
-    result = await fetch_inflection(context)
+    context = get_context(sip_rag_enabled_agents, query, legacy_api=legacy_api)
+    result = await fetch_inflection(context, legacy_api=legacy_api)
     print(result)
 
     system_prompt = '''

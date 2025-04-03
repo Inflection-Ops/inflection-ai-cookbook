@@ -1,4 +1,10 @@
 import requests
+import sys
+import os
+
+# Add the parent directory to sys.path so we can add examples/utils.py & examples/inference.py
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from utils import get_context, get_response
 from inference import fetch as fetch_inflection
 
@@ -100,24 +106,25 @@ def get_weather(latitude: str, longitude: str) -> dict:
     }
 
 
-async def handle_query(query: str) -> str:
+async def handle_query(query: str, legacy_api: bool=True) -> str:
+    
     # Extract the intent
-    context = get_context(system_instruction_prompt_intent, query)
-    result = await get_response(context, ["reasoning", "intent_recognized"])
+    context = get_context(system_instruction_prompt_intent, query, legacy_api=legacy_api)
+    result = await get_response(context, ["reasoning", "intent_recognized"], legacy_api=legacy_api)
     intent = result["intent_recognized"]
 
     match intent:
         case "weather":
-            context_2 = get_context(system_instruction_prompt_lat_long, query)
-            result = await get_response(context_2, ["latitude", "longitude"])
+            context_2 = get_context(system_instruction_prompt_lat_long, query, legacy_api=legacy_api)
+            result = await get_response(context_2, ["latitude", "longitude"], legacy_api=legacy_api)
             lat = result["latitude"]
             long = result["longitude"]
             weather = get_weather(lat, long)
             message = f""" 
             Original Message: {query}
             Current temperature: {weather['temperature_celsius']}°C ({weather['temperature_fahrenheit']}°F)"""
-            context_3 = get_context(system_instruction_prompt_weather, message)
-            return await fetch_inflection(context_3)
+            context_3 = get_context(system_instruction_prompt_weather, message, legacy_api=legacy_api)
+            return await fetch_inflection(context_3, legacy_api=legacy_api)
         case "other":
-            context_2 = get_context(system_instruction_prompt_general, query)
-            return await fetch_inflection(context_2)
+            context_2 = get_context(system_instruction_prompt_general, query, legacy_api=legacy_api)
+            return await fetch_inflection(context_2, legacy_api=legacy_api)

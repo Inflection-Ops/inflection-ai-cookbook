@@ -1,8 +1,10 @@
 import json
 import logging
+import os
 import time
 from typing import Any, Dict, Optional
 
+from dotenv import load_dotenv
 from openai import OpenAI, RateLimitError
 from pydantic import BaseModel
 
@@ -27,8 +29,14 @@ class Message(BaseModel):
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# load .env file
+load_dotenv()
+
+# Set your Inflection API key in your environment variables
+groq_api_key= os.getenv("GROQ_API_KEY")
+
 # Initialize the OpenAI client with Groq's API Key
-client = OpenAI(api_key="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",
+client = OpenAI(api_key=groq_api_key,
                 base_url="https://api.groq.com/openai/v1")
 
 
