@@ -77,6 +77,13 @@ This cookbook contains a collection of hands-on notebooks showcasing how to use 
 ---
 
 ## 🏁 **Getting Started with Inflection AI** 🏁
+In early 2025, we release a version of our inference API that adheres to the OpenAI API specs.
+This will allow you to use OpenAI client, available in the python OpenAI client library, to call our models and makes it easy to leverage them in advanced frameworks like Langchain, LlamaIndex, CrewAI...etc. without additional customization.
+
+In most of the examples provided in this cookbook, you can switch between the legacy API and the new OpenAI compatible API by setting variable ***legacy_api***
+```bash
+legacy_api = False # True if using the old API, False if using the new OpenAI compatible API
+```
 
 ### Inflection-3 Models
 
@@ -102,9 +109,13 @@ To run these examples, you’ll need an **Inflection AI Developers Account** and
 4️⃣ **Create a .env file and asign your key to INFLECTION_API_KEY**🔏
 BASE_URL=https://layercake.pubwestus3.inf7ks8.com
 INFLECTION_API_KEY=XXXXX
+GROQ_API_KEY=XXXXX
 
 The first parameter is the base url for the Inflection AI API you will be using. 
+
 The second parameter is your API key and you need to replace XXXXX with the key you created in step 1️⃣
+
+The third parameter is your Groq API key and only needed if you're running the tests in examples/tests (not needed for the examples in the Jupyter notebooks)
 
 Include your API key in all requests using the `Authorization` header:
 ```bash
