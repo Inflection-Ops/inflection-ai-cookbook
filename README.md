@@ -11,6 +11,11 @@ Whether you're automating workflows, classifying documents, generating intellige
 ## 📜📌 **What’s Inside?** 📜📌
 This cookbook contains a collection of hands-on notebooks showcasing how to use **Inflection AI** to solve real-world problems. Here’s what you’ll find inside:
 
+###  🎬  **Getting Started: Chat Completions** 🎬 
+- Uses OpenAI Client with and without streaming 
+- Uses HTTP Requests with and without streaming
+- Example: [chat_completions.ipynb](examples/chat_completions.ipynb)
+
 ### 🚦 **Intent Recognition for Service Routing** 🚦
 - Uses **Chain-of-Thought (CoT) reasoning** for smarter intent classification.
 - Extracts **user intent** & provides structured XML outputs. 
